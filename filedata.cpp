@@ -73,4 +73,14 @@ bool FileData::isMediaDateTimeSet() const
     return m_mediaDateTimeSet;
 }
 
+const QDateTime &FileData::getFilenameDateTime() const
+{
+    return m_filenameDateTime;
+}
+
+void FileData::setFilenameDateTime(const QDateTime &newFilenameDateTime)
+{
+    m_filenameDateTime = newFilenameDateTime;
+}
+
 

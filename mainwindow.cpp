@@ -6,6 +6,9 @@
 #include <QRegExp>
 #include <QStringList>
 
+#include <sys/types.h>
+#include <utime.h>
+
 #include "fileextensionfilter.h"
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
@@ -18,7 +21,7 @@ MainWindow::MainWindow(QWidget *parent) : QMainWindow(parent)
     ui->setupUi(this);
     loadSettings();
     ui->tblFileList->setModel(&m_fileListModel);
-    ui->tblFileList->horizontalHeader()->setResizeMode(QHeaderView::Stretch);
+    ui->tblFileList->horizontalHeader()->setSectionResizeMode(QHeaderView::Stretch);
 
     ui->btnPreview->setEnabled(false);
     ui->btnRename->setEnabled(false);
@@ -100,6 +103,28 @@ int MainWindow::countFiles()
     return count;
 }
 
+QDateTime MainWindow::getDateFromFilename(QString filename)
+{
+    QString fn;
+    if (filename.contains("IMG_"))
+        fn = filename.right(filename.length() - 4);
+    else
+        fn = filename;
+
+    QDateTime dt;
+    QString dateformat;
+    if (fn.contains("-"))
+        dateformat = "yyyy-MM-dd_hhmmss";
+    else
+        dateformat = "yyyyMMdd_hhmmss";
+
+    fn = fn.left(dateformat.length());
+    dt = QDateTime::fromString(fn, dateformat);
+    qDebug() << "from name " << fn << filename << " datetime " << dt << " format " << dateformat;
+
+    return dt;
+}
+
 bool MainWindow::getImageCreationDate(QString filename, QDateTime *datetime)
 {
     // dirty hack.
@@ -134,6 +159,17 @@ bool MainWindow::getVideoCreationDate(QString filename, QDateTime *datetime)
     return false;
 }
 
+void MainWindow::setFileTime(QString filename, QDateTime datetime)
+{
+    utimbuf tb;
+    tb.modtime = datetime.toTime_t(); // QDateTime::currentDateTime().toTime_t();
+    tb.actime = datetime.toTime_t();
+
+    if (utime(filename.toLocal8Bit(), &tb) != 0) {
+        qInfo() << "ERROR unable to set filetime " << filename << " error " << strerror(errno);
+    }
+}
+
 void MainWindow::loadFileList()
 {
     m_fileListModel.beginRemoveFiles();
@@ -160,6 +196,8 @@ void MainWindow::loadFileList()
             QDateTime dt;
             dt = it.fileInfo().lastModified();
             fd.setDateTime(dt);
+
+            fd.setFilenameDateTime(getDateFromFilename(it.fileName()));
 
             if (filetype == Image && getImageCreationDate(it.filePath(), &dt)) {
                 fd.setMediaDateTime(dt);
@@ -200,7 +238,10 @@ void MainWindow::createPreview()
     for (FileData& fd : m_files) {
         // create new_name
         QDateTime dt;
-        if (fd.isMediaDateTimeSet()) {
+
+        if (ui->cbUseFilenameDate->isChecked()) {
+            dt = fd.getFilenameDateTime();
+        } else if (fd.isMediaDateTimeSet()) {
             dt = fd.getMediaDateTime();
         } else {
             dt = fd.getDateTime();
@@ -221,6 +262,7 @@ void MainWindow::createPreview()
     }
 }
 
+
 void MainWindow::renameFiles()
 {
     for (FileData& fd : m_files) {
@@ -230,5 +272,15 @@ void MainWindow::renameFiles()
 
         QDir file;
         file.rename(filename_and_path_old, filename_and_path_new);
+
+        if (ui->cbRepairFileDate->isChecked())
+        {
+            if (fd.getFilenameDateTime().isValid()) {
+                qInfo() << "repair filedate of " << filename_and_path_new;
+                setFileTime(filename_and_path_new, fd.getFilenameDateTime());
+            } else {
+                qInfo() << "date time from filename not set";
+            }
+        }
     }
 }

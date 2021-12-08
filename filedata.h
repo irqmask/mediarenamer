@@ -29,6 +29,9 @@ public:
 
     bool isMediaDateTimeSet() const;
 
+    const QDateTime &getFilenameDateTime() const;
+    void setFilenameDateTime(const QDateTime &newFilenameDateTime);
+
 private:
     QString m_nameOld;
     QString m_nameNew;
@@ -36,6 +39,7 @@ private:
     QString m_fileExtension;
     QDateTime m_dateTime;
     QDateTime m_mediaDateTime;
+    QDateTime m_filenameDateTime;
     bool m_mediaDateTimeSet;
 };
 

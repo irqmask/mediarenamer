@@ -6,7 +6,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>716</width>
+    <width>738</width>
     <height>461</height>
    </rect>
   </property>
@@ -55,6 +55,20 @@
          </widget>
         </item>
         <item>
+         <widget class="QCheckBox" name="cbUseFilenameDate">
+          <property name="text">
+           <string>Datum aus Dateinamen</string>
+          </property>
+         </widget>
+        </item>
+        <item>
+         <widget class="QCheckBox" name="cbRepairFileDate">
+          <property name="text">
+           <string>repariere Dateizeitstempel</string>
+          </property>
+         </widget>
+        </item>
+        <item>
          <spacer name="horizontalSpacer">
           <property name="orientation">
            <enum>Qt::Horizontal</enum>
@@ -95,8 +109,8 @@
     <rect>
      <x>0</x>
      <y>0</y>
-     <width>716</width>
-     <height>30</height>
+     <width>738</width>
+     <height>19</height>
     </rect>
    </property>
   </widget>

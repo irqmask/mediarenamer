@@ -44,8 +44,11 @@ private:
     void saveSettings();
 
     int countFiles();
+    QDateTime getDateFromFilename(QString filename);
     bool getImageCreationDate(QString filename, QDateTime* datetime);
     bool getVideoCreationDate(QString filename, QDateTime* datetime);
+
+    void setFileTime(QString filename, QDateTime datetime);
 
     void loadFileList();
     bool listContainsEntryWithNewName(QString& newName);
