@@ -108,6 +108,8 @@ QDateTime MainWindow::getDateFromFilename(QString filename)
     QString fn;
     if (filename.contains("IMG_"))
         fn = filename.right(filename.length() - 4);
+    else if (filename.contains("VID_"))
+        fn = filename.right(filename.length() - 4);
     else
         fn = filename;
 
@@ -120,7 +122,6 @@ QDateTime MainWindow::getDateFromFilename(QString filename)
 
     fn = fn.left(dateformat.length());
     dt = QDateTime::fromString(fn, dateformat);
-    qDebug() << "from name " << fn << filename << " datetime " << dt << " format " << dateformat;
 
     return dt;
 }
@@ -219,7 +220,7 @@ void MainWindow::loadFileList()
 
 bool MainWindow::listContainsEntryWithNewName(QString &newName)
 {
-    for (FileData fd : m_files) {
+    for (FileData &fd : m_files) {
         if (fd.getNameNew() == newName) return true;
     }
     return false;
@@ -253,7 +254,8 @@ void MainWindow::createPreview()
         new_name += "_";
         new_name += title;
         // append old name to new name if new name already exists.
-        if (listContainsEntryWithNewName(new_name)) {
+        QString candidatename = new_name + fd.getFileExtension();
+        if (listContainsEntryWithNewName(candidatename)) {
             new_name += "_";
             new_name += fd.getNameOld();
         }
